@@ -1,5 +1,7 @@
 package com.example.gallaryclone.ui.theme
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,7 +19,7 @@ import com.example.gallaryclone.data.Folder
 import com.example.gallaryclone.data.MediaModel
 
 @Composable
-fun MediaScreen(folder: Folder,onImageClick: (MediaModel) -> Unit) {
+fun MediaScreen(folder: Folder,onImageClick: (String) -> Unit) {
     LazyVerticalGrid(columns = GridCells.Fixed(3)) {
         items(folder.items) { item ->
             Image(
@@ -27,7 +29,10 @@ fun MediaScreen(folder: Folder,onImageClick: (MediaModel) -> Unit) {
                     .fillMaxWidth()
                     .padding(5.dp)
                     .aspectRatio(1f)
-                    .clickable{(onImageClick(item))},
+                    .clickable {
+                        val encodedUri = Uri.encode(item.uri.toString())
+                        (onImageClick(encodedUri))
+                               },
                 contentScale = ContentScale.Crop
             )
         }

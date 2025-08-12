@@ -11,6 +11,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.gallaryclone.data.GallaryRepository
 import com.example.gallaryclone.data.MediaModel
 import com.example.gallaryclone.viewmodel.GallaryViewModel
@@ -22,32 +27,28 @@ fun HomeView(
     viewModel: GallaryViewModel = viewModel(factory = ViewModelFactory(GallaryRepository(context), context)
     )
 ) {
-    var currentScreen by remember { mutableStateOf("folders") }
-    var selectedImage by remember { mutableStateOf<MediaModel?>(null) }
+    val navController = rememberNavController()
 
-    when (currentScreen) {
-        "folders" -> {
+    NavHost(navController, startDestination = "folders") {
+        composable("folders") {
             GalleryScreen(viewModel) { bucketId ->
                 viewModel.selectFolder(bucketId)
-                currentScreen = "media"
+                navController.navigate("media")
             }
         }
-
-        "media" -> {
-            viewModel.selectedFolder?.let { folder ->
-                MediaScreen(folder) { imageUri ->
-                    selectedImage = imageUri
-                    currentScreen = "fullImage"
+        composable("media") {
+            viewModel.selectedFolder?.let {
+                MediaScreen(it) { imageUri ->
+                    navController.navigate("singlescreen/${imageUri}")
                 }
             }
         }
-
-        "fullImage" -> {
-            selectedImage?.let { Media ->
-                SingleMedia(Media) {
-                    currentScreen = "media"
-                }
-            }
+        composable("singlescreen/{imageUri}",
+            arguments = listOf(navArgument("imageUri") { type = NavType.StringType })
+        ) {
+            backStackEntry ->
+            val uri = backStackEntry.arguments?.getString("imageUri")
+            SingleMedia(uri!!)
         }
     }
 }
